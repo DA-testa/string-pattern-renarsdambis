@@ -1,49 +1,65 @@
-# python3
+# Rabin-Karp algorithm for string matching
 
+# function to find all occurrences of pattern in text
+def rabin_karp(pattern, text):
+    # length of pattern and text
+    m, n = len(pattern), len(text)
+    
+    # initialize prime number and d (number of characters in the alphabet)
+    prime = 101
+    d = 256
+    
+    # initialize hash values for text and pattern
+    p_hash = 0  # hash value for pattern
+    t_hash = 0  # hash value for text
+    
+    # h is the value of d^(m-1) with modulus prime
+    h = pow(d, m-1) % prime
+    
+    # calculate the hash value of pattern and the first window of text
+    for i in range(m):
+        p_hash = (d * p_hash + ord(pattern[i])) % prime
+        t_hash = (d * t_hash + ord(text[i])) % prime
+    
+    # slide the pattern over the text one by one and check for a match
+    occurrences = []
+    for i in range(n-m+1):
+        # check if hash values of the current window of text and pattern match
+        if p_hash == t_hash:
+            # check if characters in the window and pattern match
+            j = 0
+            while j < m and text[i+j] == pattern[j]:
+                j += 1
+            if j == m:
+                occurrences.append(i)
+        
+        # calculate the hash value of the next window of text
+        if i < n-m:
+            t_hash = (d * (t_hash - ord(text[i]) * h) + ord(text[i+m])) % prime
+            if t_hash < 0:
+                t_hash = t_hash + prime
+    
+    return occurrences
+
+# function to read input from keyboard or file
 def read_input():
-    with open('input.txt', 'r') as f:
-        pattern = f.readline().strip()
-        text = f.readline().strip()
+    # read two lines of input: pattern and text
+    pattern = input().rstrip()
+    text = input().rstrip()
+    
     return pattern, text
 
-def print_occurrences(output):
-    # this function should control output, it doesn't need any return
-    print(' '.join(map(str, output)))
+# function to print occurrences of pattern in text
+def print_occurrences(occurrences):
+    print(' '.join(map(str, occurrences)))
 
-def get_occurrences(pattern, text):
-    # this function finds the occurrences of pattern in text using Rabin-Karp algorithm
-    p = 1000000007
-    x = 1
-    t_hash = 0
-    p_hash = 0
-    positions = []
-    
-    # calculate hash of pattern
-    for i in range(len(pattern)):
-        p_hash = (p_hash + ord(pattern[i]) * x) % p
-        x = (x * 53) % p
-    
-    x = 1
-    
-    # calculate hash of first |pattern| characters of text
-    for i in range(len(pattern)):
-        t_hash = (t_hash + ord(text[i]) * x) % p
-        x = (x * 53) % p
-        
-    # check for a match in each possible starting position of pattern in text
-    for i in range(len(text) - len(pattern) + 1):
-        if t_hash == p_hash:
-            if text[i:i+len(pattern)] == pattern:
-                positions.append(i)
-        
-        # calculate hash for next window in text
-        if i < len(text) - len(pattern):
-            t_hash = (53*(t_hash-ord(text[i])*x) + ord(text[i+len(pattern)])) % p
-            if t_hash < 0:
-                t_hash += p
-        
-    return positions
-
-# this part launches the functions
+# main function
 if __name__ == '__main__':
-    print_occurrences(get_occurrences(*read_input()))
+    # read input
+    pattern, text = read_input()
+    
+    # find occurrences of pattern in text using Rabin-Karp algorithm
+    occurrences = rabin_karp(pattern, text)
+    
+    # print occurrences
+    print_occurrences(occurrences)
