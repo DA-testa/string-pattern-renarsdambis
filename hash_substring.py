@@ -1,40 +1,54 @@
+# python3
+
 def read_input():
+    # this function needs to acquire input both from keyboard and file
+    # as before, use capital i (input from keyboard) and capital f (input from file) to choose which input type will follow
+
+    # after input type choice
     # read two lines 
     # first line is pattern 
     # second line is text in which to look for pattern 
-    pattern = input().rstrip()
-    text = input().rstrip()
-
     # return both lines in one return
-    return pattern, text
+    return (input().rstrip(), input().rstrip())
 
 def print_occurrences(output):
-    # print all the positions of the occurrences of P in T in the ascending order
-    print(" ".join(map(str, output)))
+    # this function should control output, it doesn't need any return
+    print(' '.join(map(str, output)))
 
 def get_occurrences(pattern, text):
-    # list to store indices of occurrences
-    indices = []
-
-    # compute hash of pattern
-    pattern_hash = hash(pattern)
-
-    # compute hash of the first window of text
-    text_hash = hash(text[:len(pattern)])
-
-    # iterate through the remaining windows of text
+    # this function finds the occurrences of pattern in text using Rabin-Karp algorithm
+    p = 1000000007
+    x = 1
+    t_hash = 0
+    p_hash = 0
+    positions = []
+    
+    # calculate hash of pattern
+    for i in range(len(pattern)):
+        p_hash = (p_hash + ord(pattern[i]) * x) % p
+        x = (x * 53) % p
+    
+    x = 1
+    
+    # calculate hash of first |pattern| characters of text
+    for i in range(len(pattern)):
+        t_hash = (t_hash + ord(text[i]) * x) % p
+        x = (x * 53) % p
+        
+    # check for a match in each possible starting position of pattern in text
     for i in range(len(text) - len(pattern) + 1):
-        # if the hashes match, check if the pattern matches the current window of text
-        if pattern_hash == text_hash:
-            if pattern == text[i:i+len(pattern)]:
-                indices.append(i)
-        # if the hashes don't match, update the text hash for the next window
+        if t_hash == p_hash:
+            if text[i:i+len(pattern)] == pattern:
+                positions.append(i)
+        
+        # calculate hash for next window in text
         if i < len(text) - len(pattern):
-            text_hash = hash(text[i+1:i+len(pattern)+1])
+            t_hash = (53*(t_hash-ord(text[i])*x) + ord(text[i+len(pattern)])) % p
+            if t_hash < 0:
+                t_hash += p
+        
+    return positions
 
-    # return the list of indices of occurrences
-    return indices
-
-# main function
+# this part launches the functions
 if __name__ == '__main__':
     print_occurrences(get_occurrences(*read_input()))
